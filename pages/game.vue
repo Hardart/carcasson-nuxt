@@ -4,7 +4,7 @@ const players = await usePlayers()
 
 const activePlayer = ref<IPlayer | null>(null)
 const isActive = (color: PlayerColor) => {
-  if (activePlayer.value) return activePlayer.value.color === color
+  if (activePlayer.value) return activePlayer.value.colorId === color
   return false
 }
 let timerId: Ref<NodeJS.Timeout | null> = ref(null)
@@ -40,7 +40,7 @@ const resetTotal = () => {
 
       <tbody>
         <template v-for="player in players" v-if="players && players.length">
-          <tr :class="isActive(player.color) && 'bg-neutral-200'" @click="setActivePlayer(player)">
+          <tr :class="isActive(player.colorId) && 'bg-neutral-200'" @click="setActivePlayer(player)">
             <td class="p-2">{{ player.name }}</td>
             <td class="text-center">{{ player.points }}</td>
           </tr>

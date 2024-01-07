@@ -7,9 +7,10 @@ interface IOption {
 
 export interface IPlayer {
   name: string
-  color: PlayerColor
+  colorId: PlayerColor
   points: number
 }
+
 const players: Ref<IPlayer[]> = ref([])
 const options: Ref<IOption[]> = ref([
   { id: 'blue', title: 'Синий' },
@@ -22,16 +23,17 @@ const options: Ref<IOption[]> = ref([
 
 const player = reactive<IPlayer>({
   name: '',
-  color: 'blue',
+  colorId: 'blue',
   points: 0,
 })
 
 const addPlayer = () => {
-  options.value = options.value.filter(option => option.id !== player.color)
+  options.value = options.value.filter(option => option.id !== player.colorId)
   players.value.push({ ...player })
-  if (options.value.length) player.color = options.value[0].id
+  if (options.value.length) player.colorId = options.value[0].id
   player.name = ''
 }
+
 const startGame = () => {
   const router = useRouter()
   useSessionStorage('players', players)
@@ -43,17 +45,20 @@ const startGame = () => {
   <div class="fixed inset-0 grid place-items-center bg-stone-500">
     <div class="absolute top-2">
       <ul>
-        <li v-for="player in players">{{ player.name }}</li>
+        <li v-for="(player, index) in players" class="flex gap-3 text-white">
+          <div>{{ index + 1 }}:</div>
+          <div>{{ player.name }}</div>
+        </li>
       </ul>
     </div>
     <div class="px-10 py-6 bg-stone-300 rounded-lg space-y-3">
       <div v-if="options.length" class="space-y-3">
         <UiInput type="text" icon="el:adult" v-model.trim="player.name" />
-        <UiSelect :options="options" v-model="player.color" />
-        <UiSimpleButton class="w-full" text="Добавить" @click="addPlayer" />
+        <UiSelect :options="options" v-model="player.colorId" />
+        <UiSimpleButton class="w-full rounded-[6px]" text="Добавить" @click="addPlayer" :disabled="player.name.length <= 2" />
       </div>
-      <div>
-        <UiSimpleButton class="w-full bg-green-700" text="Начать игру" @click="startGame" />
+      <div v-if="players.length >= 2">
+        <UiSimpleButton class="w-full rounded-[6px] bg-green-700" text="Начать игру" @click="startGame" />
       </div>
     </div>
   </div>
