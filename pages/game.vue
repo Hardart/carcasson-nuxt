@@ -11,7 +11,7 @@ let timerId: Ref<NodeJS.Timeout | null> = ref(null)
 const total = ref(0)
 
 const setActivePlayer = (player: IPlayer) => {
-  resetTotal()
+  total.value = 0
   activePlayer.value = player
 }
 const incPoints = (value: number) => {
