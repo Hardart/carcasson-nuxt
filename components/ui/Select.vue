@@ -1,5 +1,5 @@
 <script setup lang="ts">
-enum EColor {
+enum EColorBG {
   blue = 'bg-blue-300',
   pink = 'bg-pink-300',
   yellow = 'bg-yellow-300',
@@ -9,7 +9,7 @@ enum EColor {
 }
 const props = defineProps<{
   label?: string
-  options: { id: keyof typeof EColor; title: string }[]
+  options: { id: keyof typeof EColorBG; title: string }[]
   modelValue?: any
   isRequried?: boolean
   name?: string
@@ -42,9 +42,10 @@ const changeActiveElement = (id: string) => {
             class="z-10 absolute max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
             :class="positon === 'bottom' ? 'mt-1' : 'bottom-full mb-1'"
           >
-            <ul v-for="option in options">
+            <ul>
               <li
-                :class="['relative cursor-default select-none py-2 pl-7 pr-4', EColor[option.id], option.id === 'black' && 'text-white']"
+                v-for="option in options"
+                :class="['relative cursor-default select-none py-2 pl-7 pr-4', EColorBG[option.id], option.id === 'black' && 'text-white']"
                 @click="changeActiveElement(option.id)"
               >
                 <span :class="['block truncate']">{{ option.title }}</span>

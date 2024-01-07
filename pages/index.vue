@@ -1,16 +1,4 @@
 <script lang="ts" setup>
-export type PlayerColor = 'pink' | 'blue' | 'yellow' | 'black' | 'green' | 'red'
-interface IOption {
-  id: PlayerColor
-  title: string
-}
-
-export interface IPlayer {
-  name: string
-  colorId: PlayerColor
-  points: number
-}
-
 const players: Ref<IPlayer[]> = ref([])
 const options: Ref<IOption[]> = ref([
   { id: 'blue', title: 'Синий' },
