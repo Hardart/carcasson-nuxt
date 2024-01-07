@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { IPlayer, PlayerColor } from './index.vue'
 const players = await usePlayers()
-
+const buttons = [1, 4, 9]
 const activePlayer = ref<IPlayer | null>(null)
 const isActive = (color: PlayerColor) => {
   if (activePlayer.value) return activePlayer.value.colorId === color
@@ -50,17 +50,15 @@ const resetTotal = () => {
 
     <div class="grid gap-5 p-10" v-if="players">
       <div class="grid grid-cols-2 gap-5">
-        <UiSimpleButton text="4" @click="incPoints(4)" />
-        <UiSimpleButton text="-4" @click="incPoints(-4)" />
-        <UiSimpleButton text="1" @click="incPoints(1)" />
-        <UiSimpleButton text="-1" @click="incPoints(-1)" />
-        <UiSimpleButton text="9" @click="incPoints(9)" />
-        <UiSimpleButton text="-9" @click="incPoints(-9)" />
+        <template v-for="value in buttons">
+          <UiSimpleButton :text="String(value)" @click="incPoints(value)" />
+          <UiSimpleButton :text="String(value * -1)" @click="incPoints(value * -1)" />
+        </template>
       </div>
     </div>
   </ClientOnly>
 
-  <div class="fixed bottom-10 w-full h-10 text-center" v-if="total">
+  <div class="fixed bottom-20 w-full h-10 text-center" v-if="total">
     <h3 class="font-black text-7xl">{{ total }}</h3>
   </div>
 </template>
