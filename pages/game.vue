@@ -46,7 +46,7 @@ const getColor = (color: PlayerColor) => EColor[color]
     <table class="w-full border-spacing-y-3">
       <thead class="h-10">
         <tr>
-          <th class="w-[100px]">Цвет</th>
+          <th class="w-[90px]">Цвет</th>
           <th class="text-left">Имя игрока</th>
           <th class="w-[100px]">Очки</th>
         </tr>
@@ -54,9 +54,11 @@ const getColor = (color: PlayerColor) => EColor[color]
 
       <tbody>
         <template v-for="player in players" v-if="players && players.length">
-          <tr class="h-10" :class="isActive(player.colorId) && 'bg-neutral-200'" @click="setActivePlayer(player)">
-            <td :class="getColor(player.colorId)" class="px-8 py-2">
-              <UiMipple />
+          <tr class="h-10" :class="isActive(player.colorId) && 'bg-emerald-500 text-neutral-100'" @click="setActivePlayer(player)">
+            <td :class="getColor(player.colorId)" class="flex justify-center py-2">
+              <div class="bg-white p-2.5 rounded-full">
+                <UiMipple />
+              </div>
             </td>
             <td class="px-2 text-xl">{{ player.name }}</td>
             <td class="text-center text-2xl font-bold">{{ player.points }}</td>
@@ -65,11 +67,11 @@ const getColor = (color: PlayerColor) => EColor[color]
       </tbody>
     </table>
 
-    <div class="p-10" v-if="players">
-      <div class="grid grid-cols-2 md:grid-cols-3 md:grid-rows-2 md:grid-flow-col justify-items-center gap-y-8 text-3xl">
+    <div class="p-8" v-if="players">
+      <div class="grid grid-cols-3 grid-rows-2 grid-flow-col justify-items-center gap-y-5 text-3xl">
         <template v-for="value in buttons">
-          <UiSimpleButton class="w-24 h-24 rounded-full" :text="String(value)" @click="incPoints(value)" />
-          <UiSimpleButton class="w-24 h-24 rounded-full" :text="String(value * -1)" @click="incPoints(value * -1)" />
+          <UiSimpleButton class="w-20 h-20 rounded-full" :text="String(value)" @click="incPoints(value)" />
+          <UiSimpleButton class="w-20 h-20 rounded-full" :text="String(value * -1)" @click="incPoints(value * -1)" />
         </template>
       </div>
     </div>
