@@ -67,11 +67,11 @@ const getColor = (color: PlayerColor) => EColor[color]
       </tbody>
     </table>
 
-    <div class="p-8" v-if="players">
+    <div class="p-8" v-if="players" @dblclick.prevent>
       <div class="grid grid-cols-3 grid-rows-2 grid-flow-col justify-items-center gap-y-5 text-3xl">
         <template v-for="value in buttons">
-          <UiSimpleButton class="w-20 h-20 rounded-full" :text="String(value)" @click="incPoints(value)" />
-          <UiSimpleButton class="w-20 h-20 rounded-full" :text="String(value * -1)" @click="incPoints(value * -1)" />
+          <UiSimpleButton @dblclick.prevent class="w-20 h-20 rounded-full" :text="String(value)" @click="incPoints(value)" />
+          <UiSimpleButton @dblclick.prevent class="w-20 h-20 rounded-full" :text="String(value * -1)" @click="incPoints(value * -1)" />
         </template>
       </div>
     </div>
