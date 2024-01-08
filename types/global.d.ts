@@ -1,6 +1,7 @@
-export {}
+export const colors = ['blue', 'red', 'black', 'green', 'yellow', 'pink'] as const
+
 declare global {
-  type PlayerColor = 'pink' | 'blue' | 'yellow' | 'black' | 'green' | 'red'
+  type PlayerColor = (typeof colors)[number]
 
   interface IPlayer {
     name: string
