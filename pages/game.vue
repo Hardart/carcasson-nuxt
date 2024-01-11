@@ -7,65 +7,84 @@ enum EColor {
   red = 'text-red-600',
   green = 'text-green-500',
 }
+const delay = (ms: number = 0) => new Promise(res => setTimeout(res, ms))
+
+const prevPlayerTimerId = reactive<Record<string, NodeJS.Timeout>>({})
 
 const players = await usePlayers()
-let timerId: Ref<NodeJS.Timeout | null> = ref(null)
-const total = ref(0)
+const timerId: Ref<NodeJS.Timeout | null> = ref(null)
 const buttons = [1, 4, 9]
 const activePlayer = ref<IPlayer | null>(null)
 
-const isActive = (color: PlayerColor) => {
-  if (activePlayer.value) return activePlayer.value.colorId === color
-  return false
-}
+const isActive = (color: PlayerColor) => activePlayer.value?.colorId === color
 
 const setActivePlayer = (player: IPlayer) => {
-  total.value = 0
   activePlayer.value = player
+  if (player.points.showCurrent) clearTimeout(prevPlayerTimerId[player.colorId])
+  timerId.value = null
 }
 
 const incPoints = (value: number) => {
   if (!activePlayer.value) return
-  resetTotal()
-  activePlayer.value!.points += value
-  total.value += value
+  activePlayer.value.points.showCurrent = true
+  resetTotal(activePlayer.value)
+  activePlayer.value.points.total += value
+  activePlayer.value.points.current += value
+  sortPayers()
 }
 
-const resetTotal = () => {
-  if (timerId.value) clearTimeout(timerId.value)
-  timerId.value = setTimeout(() => {
-    total.value = 0
-  }, 3000)
+const resetTotal = (player: IPlayer) => {
+  const timerid = timerId.value
+  if (timerid) clearTimeout(timerid)
+  timerId.value = setTimeout(() => resetCurrentPoints(player), 4000)
+  prevPlayerTimerId[player.colorId] = timerId.value
 }
 
+async function resetCurrentPoints(player: IPlayer) {
+  player.points.showCurrent = false
+  await delay(300)
+  player.points.current = 0
+}
+
+const sortPayers = () => (players.value = players.value.sort((a, b) => b.points.total - a.points.total))
 const getColor = (color: PlayerColor) => EColor[color]
 </script>
 
 <template>
   <ClientOnly>
-    <table class="w-full border-spacing-y-3">
-      <thead class="h-10">
-        <tr>
-          <th class="w-[90px]">Цвет</th>
-          <th class="text-left">Имя игрока</th>
-          <th class="w-[100px]">Очки</th>
-        </tr>
-      </thead>
+    <div class="grid grid-cols-12 h-10 text-xl mx-2 items-center font-bold gap-x-3">
+      <div class="col-span-2 text-center">Цвет</div>
+      <div class="col-span-5">Имя игрока</div>
+      <div class="col-span-3 text-center">Ресурсы</div>
+      <div class="col-span-2 text-center">Очки</div>
+    </div>
 
-      <tbody>
-        <template v-for="player in players" v-if="players && players.length">
-          <tr class="h-10" :class="isActive(player.colorId) && 'bg-emerald-500 text-neutral-100'" @click="setActivePlayer(player)">
-            <td :class="getColor(player.colorId)" class="flex justify-center py-2">
-              <div class="bg-white p-2.5 rounded-full">
-                <UiMipple />
-              </div>
-            </td>
-            <td class="px-2 text-xl">{{ player.name }}</td>
-            <td class="text-center text-2xl font-bold">{{ player.points }}</td>
-          </tr>
-        </template>
-      </tbody>
-    </table>
+    <TransitionFade group tag="ul" class="space-y-3">
+      <div
+        v-for="player in players"
+        :key="player.colorId"
+        v-if="players && players.length"
+        class="grid grid-cols-12 text-xl mx-2 items-center gap-x-3"
+        :class="isActive(player.colorId) && 'bg-emerald-500 text-neutral-100'"
+        @click="setActivePlayer(player)"
+      >
+        <div :class="getColor(player.colorId)" class="col-span-2 flex justify-center p-2">
+          <UiMipple />
+        </div>
+        <div class="col-span-5 px-2 first-letter:uppercase">
+          {{ player.name }}
+          <PlayerPointsCurrent :points="player.points" />
+        </div>
+        <div class="col-span-3 px-2 text-2xl font-bold">
+          <div class="flex gap-x-4 justify-center">
+            <div class="w-16 h-[65px] bg-yellow-300 rounded-lg"></div>
+            <div class="w-16 h-[65px] bg-yellow-300 rounded-lg"></div>
+            <div class="w-16 h-[65px] bg-yellow-300 rounded-lg"></div>
+          </div>
+        </div>
+        <div class="col-span-2 text-center px-2 text-2xl font-bold">{{ player.points.total }}</div>
+      </div>
+    </TransitionFade>
 
     <div class="p-8" v-if="players" @dblclick.prevent>
       <div class="grid grid-cols-3 grid-rows-2 grid-flow-col justify-items-center gap-y-5 text-3xl">
@@ -77,9 +96,28 @@ const getColor = (color: PlayerColor) => EColor[color]
     </div>
   </ClientOnly>
 
-  <div class="fixed bottom-20 w-full h-10 text-center" v-if="total">
+  <!-- <div class="fixed bottom-20 w-full h-10 text-center" v-if="total">
     <h3 class="font-black text-7xl">{{ total }}</h3>
-  </div>
+  </div> -->
 </template>
 
-<style scoped></style>
+<style>
+.fade-move,
+.fade-enter-active,
+.fade-leave-active {
+  transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
+}
+
+/* 2. declare enter from and leave to state */
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: scaleY(0.01) translate(30px, 0);
+}
+
+/* 3. ensure leaving items are taken out of layout flow so that moving
+      animations can be calculated correctly. */
+.fade-leave-active {
+  position: absolute;
+}
+</style>

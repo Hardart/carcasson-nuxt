@@ -2,11 +2,23 @@ export const colors = ['blue', 'red', 'black', 'green', 'yellow', 'pink'] as con
 
 declare global {
   type PlayerColor = (typeof colors)[number]
+  interface IResource {
+    rum: number
+    wheat: number
+    silk: number
+  }
+
+  interface IPoints {
+    current: number
+    total: number
+    showCurrent: boolean
+  }
 
   interface IPlayer {
     name: string
     colorId: PlayerColor
-    points: number
+    points: IPoints
+    resources: IResource
   }
 
   interface IOption {

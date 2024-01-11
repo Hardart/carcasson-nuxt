@@ -12,7 +12,16 @@ const options: Ref<IOption[]> = ref([
 const player = reactive<IPlayer>({
   name: '',
   colorId: 'blue',
-  points: 0,
+  points: {
+    current: 0,
+    total: 0,
+    showCurrent: false,
+  },
+  resources: {
+    rum: 0,
+    silk: 0,
+    wheat: 0,
+  },
 })
 
 const addPlayer = () => {
