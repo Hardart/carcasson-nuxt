@@ -8,6 +8,11 @@ const options: Ref<IOption[]> = ref([
   { id: 'green', title: 'Зеленый' },
   { id: 'red', title: 'Красный' },
 ])
+const resources: IResource[] = [
+  { type: 'rum', count: 0, maxValue: 9 },
+  { type: 'silk', count: 0, maxValue: 5 },
+  { type: 'wheat', count: 0, maxValue: 6 },
+]
 
 const player = reactive<IPlayer>({
   name: '',
@@ -17,11 +22,7 @@ const player = reactive<IPlayer>({
     total: 0,
     showCurrent: false,
   },
-  resources: {
-    rum: 0,
-    silk: 0,
-    wheat: 0,
-  },
+  resources,
 })
 
 const addPlayer = () => {

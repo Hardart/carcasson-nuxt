@@ -2,10 +2,12 @@ export const colors = ['blue', 'red', 'black', 'green', 'yellow', 'pink'] as con
 
 declare global {
   type PlayerColor = (typeof colors)[number]
+  type ResourceType = 'silk' | 'wheat' | 'rum'
+
   interface IResource {
-    rum: number
-    wheat: number
-    silk: number
+    type: ResourceType
+    count: number
+    maxValue: number
   }
 
   interface IPoints {
@@ -18,7 +20,7 @@ declare global {
     name: string
     colorId: PlayerColor
     points: IPoints
-    resources: IResource
+    resources: IResource[]
   }
 
   interface IOption {

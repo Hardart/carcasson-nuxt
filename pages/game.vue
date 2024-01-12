@@ -12,16 +12,25 @@ const delay = (ms: number = 0) => new Promise(res => setTimeout(res, ms))
 const prevPlayerTimerId = reactive<Record<string, NodeJS.Timeout>>({})
 
 const players = await usePlayers()
+const resourcesCount = await useResources()
+
 const timerId: Ref<NodeJS.Timeout | null> = ref(null)
 const buttons = [1, 4, 9]
 const activePlayer = ref<IPlayer | null>(null)
+const activeResource = ref<IResource | null>(null)
 
-const isActive = (color: PlayerColor) => activePlayer.value?.colorId === color
+const isActivePlayer = (colorId: PlayerColor) => activePlayer.value?.colorId === colorId
+
+const isActiveResourse = (resource: IResource) => activeResource.value?.type === resource.type
 
 const setActivePlayer = (player: IPlayer) => {
   activePlayer.value = player
   if (player.points.showCurrent) clearTimeout(prevPlayerTimerId[player.colorId])
   timerId.value = null
+}
+
+const setActiveResourse = (resource: IResource) => {
+  activeResource.value = resource
 }
 
 const incPoints = (value: number) => {
@@ -31,6 +40,28 @@ const incPoints = (value: number) => {
   activePlayer.value.points.total += value
   activePlayer.value.points.current += value
   sortPayers()
+}
+
+const incResourse = (increase: boolean = true) => {
+  if (!activePlayer.value || !activeResource.value) return
+  activePlayer.value.resources = activePlayer.value.resources.map(changeResourceCount(increase))
+  console.log(resourcesCount.value)
+}
+
+function changeResourceCount(increase: boolean) {
+  return function (item: IResource) {
+    const searchType = activeResource.value!.type
+    if (item.type === searchType) {
+      if (increase && resourcesCount.value[searchType] > 0) {
+        resourcesCount.value[searchType]--
+        item.count++
+      } else if (!increase && resourcesCount.value[searchType] < item.maxValue) {
+        resourcesCount.value[searchType]++
+        item.count--
+      }
+    }
+    return item
+  }
 }
 
 const resetTotal = (player: IPlayer) => {
@@ -45,9 +76,13 @@ async function resetCurrentPoints(player: IPlayer) {
   await delay(300)
   player.points.current = 0
 }
-
+const findResourse = () => activePlayer.value?.resources.find(res => res.type === activeResource.value?.type)
 const sortPayers = () => (players.value = players.value.sort((a, b) => b.points.total - a.points.total))
 const getColor = (color: PlayerColor) => EColor[color]
+
+const mustDisabled = () => {
+  return !(activePlayer.value && activeResource.value)
+}
 </script>
 
 <template>
@@ -65,7 +100,7 @@ const getColor = (color: PlayerColor) => EColor[color]
         :key="player.colorId"
         v-if="players && players.length"
         class="grid grid-cols-12 text-xl mx-2 items-center gap-x-3"
-        :class="isActive(player.colorId) && 'bg-emerald-500 text-neutral-100'"
+        :class="isActivePlayer(player.colorId) && 'bg-emerald-500 text-neutral-100'"
         @click="setActivePlayer(player)"
       >
         <div :class="getColor(player.colorId)" class="col-span-2 flex justify-center p-2">
@@ -77,9 +112,7 @@ const getColor = (color: PlayerColor) => EColor[color]
         </div>
         <div class="col-span-3 px-2 text-2xl font-bold">
           <div class="flex gap-x-4 justify-center">
-            <div class="w-16 h-[65px] bg-yellow-300 rounded-lg"></div>
-            <div class="w-16 h-[65px] bg-yellow-300 rounded-lg"></div>
-            <div class="w-16 h-[65px] bg-yellow-300 rounded-lg"></div>
+            <ResourseProgress v-for="resource in player.resources" :resource="resource" />
           </div>
         </div>
         <div class="col-span-2 text-center px-2 text-2xl font-bold">{{ player.points.total }}</div>
@@ -94,6 +127,10 @@ const getColor = (color: PlayerColor) => EColor[color]
         </template>
       </div>
     </div>
+
+    <ResourceList v-if="players" :resources="players[0].resources" :is-active="isActiveResourse" @on-active="setActiveResourse" />
+    <UiSimpleButton @dblclick.prevent class="w-20 h-20 rounded-full" text="1" @click="incResourse" :disabled="mustDisabled()" />
+    <UiSimpleButton @dblclick.prevent class="w-20 h-20 rounded-full" text="-1" @click="incResourse(false)" :disabled="mustDisabled()" />
   </ClientOnly>
 
   <!-- <div class="fixed bottom-20 w-full h-10 text-center" v-if="total">
