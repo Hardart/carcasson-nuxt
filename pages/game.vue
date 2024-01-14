@@ -88,9 +88,8 @@ const mustDisabled = () => {
         <div :class="getColor(player.colorId)" class="col-span-2 flex justify-center p-2">
           <UiMipple />
         </div>
-        <div class="col-span-8 sm:col-span-4 lg:col-span-5 px-2 first-letter:uppercase relative">
-          {{ player.name }}
-          <PlayerPointsCurrent :points="player.points" />
+        <div class="col-span-8 sm:col-span-4 lg:col-span-5 px-2">
+          <PlayerName :player="player" />
         </div>
         <div class="sm:col-span-4 lg:col-span-3 px-2 text-2xl font-bold hidden sm:block">
           <PlayerResourceList :resources="player.resources" />
