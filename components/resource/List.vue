@@ -1,7 +1,7 @@
 <script setup lang="ts">
 defineProps<{
   resources: IResource[]
-  isActive: (res: IResource) => boolean
+  active: IResource | null
 }>()
 defineEmits(['set-active'])
 </script>
@@ -10,7 +10,7 @@ defineEmits(['set-active'])
   <ul class="flex justify-around relative">
     <Resourse
       v-for="resource in resources"
-      :class="isActive(resource) && 'text-neutral-100 !bg-white  border-fuchsia-400'"
+      :class="active?.type == resource.type && 'text-neutral-100 !bg-white  border-fuchsia-400'"
       @click="$emit('set-active', resource)"
       :resource="resource"
     />

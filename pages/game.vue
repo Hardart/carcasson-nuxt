@@ -1,52 +1,40 @@
 <script lang="ts" setup>
-enum EColor {
-  blue = 'text-blue-400',
-  pink = 'text-pink-400',
-  yellow = 'text-yellow-300',
-  black = 'text-neutral-900',
-  red = 'text-red-600',
-  green = 'text-green-500',
-}
-const delay = (ms: number = 0) => new Promise(res => setTimeout(res, ms))
-
-const prevPlayerTimerId = reactive<Record<string, NodeJS.Timeout>>({})
-
+type PlayerTimerID = Record<string, NodeJS.Timeout | null>
+const playerTimerId = reactive<PlayerTimerID>({})
 const players = await usePlayers()
 const resourcesData = await useResources()
 
-const timerId: Ref<NodeJS.Timeout | null> = ref(null)
+// const timerId: Ref<NodeJS.Timeout | null> = ref(null)
 const buttons = [1, 4, 9]
 const activePlayer = ref<IPlayer | null>(null)
 const activeResource = ref<IResource | null>(null)
 
-const isActivePlayer = (colorId: PlayerColor) => activePlayer.value?.colorId === colorId
-
-const isActiveResourse = (resource: IResource) => activeResource.value?.type === resource.type
-
 const setActivePlayer = (player: IPlayer) => {
   activePlayer.value = player
-  if (player.points.showCurrent) clearTimeout(prevPlayerTimerId[player.colorId])
-  timerId.value = null
+  const timer = playerTimerId[player.colorId]
+  if (player.points.showCurrent && timer) clearTimeout(timer)
+  playerTimerId[player.colorId] = null
 }
 
 const setActiveResourse = (resource: IResource) => {
   if (!activePlayer.value) return
   activeResource.value = resource
 }
+const sortWithDelay = actionAfterDelay()
+const resetWithDelay = actionAfterDelay()
 
-const incPoints = (value: number) => {
+const incPoints = async (value: number) => {
   if (!activePlayer.value) return
   activePlayer.value.points.showCurrent = true
   resetTotal(activePlayer.value)
   activePlayer.value.points.total += value
   activePlayer.value.points.current += value
-  sortPayers()
+  sortWithDelay(sortPayers, 1000)
 }
 
 const incResourse = (increase: boolean = true) => {
   if (!activePlayer.value || !activeResource.value) return
   activePlayer.value.resources = activePlayer.value.resources.map(changeResourceCount(increase))
-  console.log(resourcesData.value)
 }
 
 function changeResourceCount(increase: boolean) {
@@ -66,20 +54,13 @@ function changeResourceCount(increase: boolean) {
 }
 
 const resetTotal = (player: IPlayer) => {
-  const timerid = timerId.value
+  const timerid = playerTimerId[player.colorId]
   if (timerid) clearTimeout(timerid)
-  timerId.value = setTimeout(() => resetCurrentPoints(player), 4000)
-  prevPlayerTimerId[player.colorId] = timerId.value
+  playerTimerId[player.colorId] = setTimeout(() => resetCurrentPoints(player)(), 3000)
 }
 
-async function resetCurrentPoints(player: IPlayer) {
-  player.points.showCurrent = false
-  await delay(300)
-  player.points.current = 0
-}
 const findResourse = () => activePlayer.value?.resources.find(res => res.type === activeResource.value?.type)
 const sortPayers = () => (players.value = players.value.sort((a, b) => b.points.total - a.points.total))
-const getColor = (color: PlayerColor) => EColor[color]
 
 const mustDisabled = () => {
   return !(activePlayer.value && activeResource.value)
@@ -100,18 +81,18 @@ const mustDisabled = () => {
         v-for="player in players"
         :key="player.colorId"
         v-if="players && players.length"
-        class="grid grid-cols-12 text-xl mx-2 items-center gap-x-3"
-        :class="isActivePlayer(player.colorId) && 'bg-emerald-500 text-neutral-100'"
+        class="grid grid-cols-12 text-xl text-neutral-500 mx-2 items-center gap-x-3"
+        :class="activePlayer?.colorId == player.colorId && 'bg-indigo-400/10 !text-neutral-800 rounded-lg'"
         @click="setActivePlayer(player)"
       >
         <div :class="getColor(player.colorId)" class="col-span-2 flex justify-center p-2">
           <UiMipple />
         </div>
-        <div class="col-span-8 sm:col-span-5 px-2 first-letter:uppercase relative">
+        <div class="col-span-8 sm:col-span-4 lg:col-span-5 px-2 first-letter:uppercase relative">
           {{ player.name }}
           <PlayerPointsCurrent :points="player.points" />
         </div>
-        <div class="col-span-4 sm:col-span-3 px-2 text-2xl font-bold hidden sm:block">
+        <div class="sm:col-span-4 lg:col-span-3 px-2 text-2xl font-bold hidden sm:block">
           <PlayerResourceList :resources="player.resources" />
         </div>
         <div class="col-span-2 text-center px-2 text-2xl font-bold">{{ player.points.total }}</div>
@@ -128,7 +109,7 @@ const mustDisabled = () => {
     </div>
 
     <div class="bg-zinc-100 py-6">
-      <ResourceList v-if="players" :resources="players[0].resources" :is-active="isActiveResourse" @set-active="setActiveResourse" />
+      <ResourceList v-if="players" :resources="players[0].resources" :active="activeResource" @set-active="setActiveResourse" />
       <div class="flex justify-around max-w-[70%] mx-auto">
         <UiSimpleButton @dblclick.prevent class="w-20 h-20 rounded-full" text="1" @click="incResourse" :disabled="mustDisabled()" />
         <UiSimpleButton @dblclick.prevent class="w-20 h-20 rounded-full" text="-1" @click="incResourse(false)" :disabled="mustDisabled()" />
