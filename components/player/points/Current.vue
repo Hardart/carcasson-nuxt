@@ -5,7 +5,11 @@ defineProps<{
 </script>
 
 <template>
-  <span class="absolute ml-6 duration-300 font-bold text-2xl transition-opacity" :class="points.showCurrent ? 'opacity-100' : 'opacity-0'">{{ points.current }}</span>
+  <span
+    class="absolute ml-6 -top-1 duration-300 font-bold text-3xl transition-opacity"
+    :class="points.showCurrent ? 'opacity-100' : 'opacity-0'"
+    >{{ points.current }}</span
+  >
 </template>
 
 <style scoped></style>
